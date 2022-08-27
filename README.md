@@ -1,5 +1,8 @@
 ## Exports
 
+**Requires yarn workspaces**
+- Only valid yarn workspaces are checked for exports
+
 Searches for `/** @export 'import-name' */` in all files in the project.
 
 Automatically populates `package.json` `exports` with what it finds.
