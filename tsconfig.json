@@ -1,0 +1,39 @@
+{
+    "compilerOptions": {
+        "target": "es5",
+        "lib": [
+            "dom",
+            "dom.iterable",
+            "esnext"
+        ],
+        "allowJs": true,
+        "skipLibCheck": true,
+        "strict": false,
+        "forceConsistentCasingInFileNames": true,
+        "noEmit": false,
+        "incremental": true,
+        "esModuleInterop": true,
+        "module": "commonjs",
+        "moduleResolution": "NodeNext",
+        "resolveJsonModule": true,
+        "isolatedModules": true,
+        "strictNullChecks": true,
+        "jsx": "preserve",
+        "outDir": "./dist",
+        "declaration": true
+    },
+    "ts-node": {
+        "compilerOptions": {
+            "module": "commonjs"
+        }
+    },
+    "include": [
+        "next-env.d.ts",
+        "**/*.ts",
+        "**/*.tsx"
+    ],
+    "exclude": [
+        "node_modules",
+        "dist"
+    ]
+}
