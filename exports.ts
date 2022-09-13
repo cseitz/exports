@@ -5,6 +5,7 @@ import chokidar from 'chokidar';
 import { createInterface } from 'readline';
 import { readdir, readFile, stat, writeFile } from 'fs/promises';
 import { isEqual } from 'lodash';
+import JSON5 from 'json5';
 
 // console.log('eey');
 
@@ -77,7 +78,7 @@ function updateExports(cwd: string) {
         exports: {},
     }, getSource(cwd)).then(async exports => {
         // console.log('exports', exports);
-        const pkg = JSON.parse(await readFile(__package, 'utf8'));
+        const pkg = JSON5.parse(await readFile(__package, 'utf8'));
         const originalExports = pkg.exports;
         pkg.exports = exports;
         if (Object.keys(pkg.exports).length === 0) {
@@ -137,7 +138,7 @@ export function DependencyExports(dependencies: string[] | '*', watch = false) {
             return false;
         }).join('\n');
     }
-    const workspaces = JSON.parse(_workspaces);
+    const workspaces = JSON5.parse(_workspaces);
     const found = new Set<string>();
     if (dependencies === '*') {
         for (const key in workspaces) {
