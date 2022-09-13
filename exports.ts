@@ -123,7 +123,7 @@ export function Exports(cwd?: string, watch = false) {
 
 
 function getYarn() {
-    return 'npx --location=project yarn ';
+    return 'FORCE_COLOR=0 npx --location=project yarn ';
 }
 
 export function DependencyExports(dependencies: string[] | '*', watch = false) {
