@@ -6,13 +6,24 @@ import { createInterface } from 'readline';
 import { readdir, readFile, stat, writeFile } from 'fs/promises';
 import { isEqual } from 'lodash';
 import JSON5 from 'json5';
+import chalk from 'chalk';
 
 
 const args = process.argv.join(' ');
 
 const TEST = args.includes('--test');
 const PROFILE = TEST || args.includes('--profile');
+const SILENT = args.includes('--silent');
 
+if (!SILENT) {
+    let finalLine = false;
+    process.on('exit', () => {
+        if (!finalLine) {
+            finalLine = true;
+            console.log('');
+        }
+    })
+}
 
 
 type Context = {
@@ -20,6 +31,19 @@ type Context = {
     exports: any
     __package: string
 }
+
+
+function printExports(pkg: any) {
+    if (SILENT) return;
+    console.log('');
+    console.log(chalk.yellow('exports'), '-', chalk.magenta(pkg.name));
+    const exports: [string, { default: string }][] = Object.entries(pkg.exports || {});
+    for (const [key, value] of exports) {
+        console.log('  ' + chalk.green(key.slice(2)), '->', value.default.slice(2));
+    }
+}
+
+
 
 async function addExport(ctx: Context, file: string, stats: Stats) {
     const { cwd, exports, __package } = ctx;
@@ -102,6 +126,7 @@ function updateExports(cwd: string) {
         if (!isEqual(originalExports, pkg.exports)) {
             await writeFile(__package, JSON.stringify(pkg, null, 2));
         }
+        printExports(pkg);
         // console.log('updated exports for', cwd);
     })
 }
