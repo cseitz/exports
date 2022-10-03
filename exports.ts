@@ -7,7 +7,13 @@ import { readdir, readFile, stat, writeFile } from 'fs/promises';
 import { isEqual } from 'lodash';
 import JSON5 from 'json5';
 
-// console.log('eey');
+
+const args = process.argv.join(' ');
+
+const TEST = args.includes('--test');
+const PROFILE = TEST || args.includes('--profile');
+
+
 
 type Context = {
     cwd: string
@@ -20,6 +26,7 @@ async function addExport(ctx: Context, file: string, stats: Stats) {
     const input = createReadStream(file);
     const rl = createInterface({ input });
     let n = 0;
+    if (PROFILE) console.time(`addExport:loop (${file})`);
     for await (const line of rl) {
         if (n++ > 10) return;
         if (line.startsWith('import')) {
@@ -38,6 +45,7 @@ async function addExport(ctx: Context, file: string, stats: Stats) {
             }
         }
     }
+    if (PROFILE) console.timeEnd(`addExport:loop (${file})`);
 }
 
 async function getExports(ctx: Context, dir: string, recursive = true) {
@@ -45,11 +53,15 @@ async function getExports(ctx: Context, dir: string, recursive = true) {
     if (recursive && dir.endsWith('src')) {
         await getExports(ctx, dirname(dir), false);
     }
+    if (PROFILE) console.time(`getExports:readdir (${dir})`);
     const dirs = await readdir(dir);
+    if (PROFILE) console.timeEnd(`getExports:readdir (${dir})`);
     const files = await Promise.all(
         dirs.map(async subdir => {
+            if (PROFILE) console.time(` - getExports:subdir (${subdir})`);
             const res = resolve(dir, subdir);
             const stats = await stat(res);
+            if (PROFILE) console.timeEnd(` - getExports:subdir (${subdir})`);
 
             if (recursive && stats.isDirectory()) {
                 return await getExports(ctx, res);
@@ -130,6 +142,7 @@ function getYarn() {
 }
 
 export function DependencyExports(dependencies: string[] | '*', watch = false) {
+    if (PROFILE) console.time(`DependencyExports`);
     let _workspaces = execSync(getYarn() + 'workspaces info --json', {
         encoding: 'utf8'
     });
@@ -158,23 +171,31 @@ export function DependencyExports(dependencies: string[] | '*', watch = false) {
             }
         }
     }
+    // const runs: Promise<any>[] = [];
     for (const dep of Array.from(found)) {
-        try {
-            execSync(getYarn() + 'workspace ' + dep + ' ls', { encoding: 'utf8', stdio: 'pipe' });
-        } catch (err) {
-            const dir = err.stderr.split(/\r?\n/).find(o => o.startsWith('Directory'));
-            const loc = workspaces[dep].location;
-            if (dir.includes(loc)) {
-                const cwd = resolve(dir.split('y: ').pop());
-                // console.log({ [dep]: cwd })
-                if (watch) {
-                    watchExports(cwd)
-                } else {
-                    updateExports(cwd);
+        // runs.push((async () => {
+            try {
+                if (PROFILE) console.time(`DependencyExports:run:execSync (${dep})`);
+                execSync(getYarn() + 'workspace ' + dep + ' ls', { encoding: 'utf8', stdio: 'pipe' });
+                if (PROFILE) console.timeEnd(`DependencyExports:run:execSync (${dep})`);
+            } catch (err) {
+                if (PROFILE) console.timeEnd(`DependencyExports:run:execSync (${dep})`);
+                const dir = err.stderr.split(/\r?\n/).find(o => o.startsWith('Directory'));
+                const loc = workspaces[dep].location;
+                if (dir.includes(loc)) {
+                    const cwd = resolve(dir.split('y: ').pop());
+                    // console.log({ [dep]: cwd })
+                    if (watch) {
+                        watchExports(cwd)
+                    } else {
+                        updateExports(cwd);
+                    }
                 }
             }
-        }
+        // })());
     }
+    // Promise.all(runs);
+    if (PROFILE) console.timeEnd(`DependencyExports`);
 }
 
 
