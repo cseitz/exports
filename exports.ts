@@ -40,15 +40,18 @@ async function addExport(ctx: Context, file: string, stats: Stats) {
     }
 }
 
-async function getExports(ctx: Context, dir: string) {
+async function getExports(ctx: Context, dir: string, recursive = true) {
     const { exports } = ctx;
+    if (recursive && dir.endsWith('src')) {
+        await getExports(ctx, dirname(dir), false);
+    }
     const dirs = await readdir(dir);
     const files = await Promise.all(
         dirs.map(async subdir => {
             const res = resolve(dir, subdir);
             const stats = await stat(res);
 
-            if (stats.isDirectory()) {
+            if (recursive && stats.isDirectory()) {
                 return await getExports(ctx, res);
             }
 
@@ -95,7 +98,7 @@ function watchExports(cwd: string) {
     let pending: any;
     const update = updateExports.bind(null, cwd);
     update();
-    chokidar.watch(getSource(cwd)).on('all', (event, path) => {
+    chokidar.watch([getSource(cwd), cwd + '/*']).on('all', (event, path) => {
         // console.log(path);
         if (pending) clearTimeout(pending);
         pending = setTimeout(update, 1000);
