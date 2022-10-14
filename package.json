@@ -8,7 +8,8 @@
   "scripts": {
     "test": "yarn build && yarn copy && cd test && yarn exports --test",
     "copy": "rm -rf ./test/node_modules/@cseitz/exports/dist && copyfiles -u 1 'dist/**/*' -e 'dist/test/**/*' ./test/node_modules/@cseitz/exports/dist && cp package.json ./test/node_modules/@cseitz/exports/package.json && cd ./test && yarn install -W && cd ..",
-    "build": "tsc"
+    "build": "tsc",
+    "prepublish": "tsc"
   },
   "dependencies": {
     "@types/lodash": "^4.14.182",
