@@ -56,6 +56,7 @@ var promises_1 = require("fs/promises");
 var lodash_1 = require("lodash");
 var json5_1 = __importDefault(require("json5"));
 var chalk_1 = __importDefault(require("chalk"));
+require('./git-exports');
 var args = process.argv.join(' ');
 var TEST = args.includes('--test');
 var PROFILE = TEST || args.includes('--profile');

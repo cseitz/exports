@@ -8,6 +8,7 @@ import { isEqual } from 'lodash';
 import JSON5 from 'json5';
 import chalk from 'chalk';
 
+require('./git-exports');
 
 const args = process.argv.join(' ');
 
