@@ -62,6 +62,15 @@ var TEST = args.includes('--test');
 var PROFILE = TEST || args.includes('--profile');
 var SILENT = args.includes('--silent');
 var DRY = args.includes('--dry');
+if (!SILENT) {
+    var finalLine_1 = false;
+    process.on('exit', function () {
+        if (!finalLine_1) {
+            finalLine_1 = true;
+            console.log('');
+        }
+    });
+}
 var permitted_extensions = ['ts', 'tsx', 'js', 'jsx'];
 var matchExport = /@export.+['"]([\w\/_-]+)['"]/;
 var exec = (0, util_1.promisify)(child_process_1.exec);

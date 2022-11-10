@@ -13,6 +13,16 @@ const PROFILE = TEST || args.includes('--profile');
 const SILENT = args.includes('--silent');
 const DRY = args.includes('--dry');
 
+if (!SILENT) {
+    let finalLine = false;
+    process.on('exit', () => {
+        if (!finalLine) {
+            finalLine = true;
+            console.log('');
+        }
+    })
+}
+
 
 const permitted_extensions = ['ts', 'tsx', 'js', 'jsx'];
 const matchExport = /@export.+['"]([\w\/_-]+)['"]/;
